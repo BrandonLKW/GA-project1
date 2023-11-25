@@ -125,6 +125,27 @@ function createTetromino(){
   } else{
     console.log("Game over");
   }
+  testFallingLogic(cell);
+}
+
+//https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
+function testFallingLogic(cell){
+  let currentCell = cell;
+  console.log(currentCell.getAttribute("id"));
+  intervalId = setInterval(() => {
+    if (currentCell.getAttribute("id") !== "x4y19"){
+      currentCell.setAttribute("src", "white-box.png");
+      //Get upcoming cell coords
+      let xCoord = parseInt(currentCell.getAttribute("id").substring(2,1)); //get upcoming x coord (range of 0-9)
+      let yCoord = parseInt(currentCell.getAttribute("id").substring(3)) + 1; //get upcoming y coord (range of 0-19)
+      cellCoord = "x" + xCoord + "y" + yCoord; //this is the updated coords, to be used for further iterations
+      console.log("testcoord", "x" + xCoord + "y" + yCoord);
+      currentCell = document.querySelector("#" + cellCoord);
+      currentCell.setAttribute("src", "red-box.png");
+    } else{
+      clearInterval(intervalId);
+    }
+  }, 2000);
 }
 
 
