@@ -1,0 +1,51 @@
+body {
+  margin-right: 5%;
+  margin-left: 5%;
+}
+
+#titleHeaderSubSection{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column wrap;
+}
+
+#titleMenuSubSection{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column wrap;
+}
+
+#mainGame{
+  background-color: black;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-rows: 2fr 2fr;
+}
+
+#mainLeftSection{
+  background-color: pink;
+  grid-column: 1;
+  grid-row: 1/2;
+}
+
+#mainCenterSection{
+  background-color: darkcyan;
+  grid-column: 2;
+  grid-row: 1/2;
+}
+
+#mainRightSection{
+  background-color: darkred;
+  grid-column: 3;
+  grid-row: 1/2;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}
