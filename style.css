@@ -1,51 +1,55 @@
 body {
+  height: 80vh;
+  margin-top: 5%;
   margin-right: 5%;
   margin-left: 5%;
-}
-
-#titleHeaderSubSection{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-flow: column wrap;
-}
-
-#titleMenuSubSection{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-flow: column wrap;
-}
-
-#mainGame{
-  background-color: black;
   display: grid;
   grid-template-columns: 1fr 3fr 1fr;
-  grid-template-rows: 2fr 2fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+}
+
+#titleSection{
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#startGameBtn{
+  grid-column: 2;
+  grid-row: 2;
+}
+
+#hiscoresBtn{
+  grid-column: 2;
+  grid-row: 3;
+}
+
+#settingsBtn{
+  grid-column: 2;
+  grid-row: 4;
 }
 
 #mainLeftSection{
   background-color: pink;
   grid-column: 1;
-  grid-row: 1/2;
+  grid-row: 1/6;
 }
 
 #mainCenterSection{
   background-color: darkcyan;
   grid-column: 2;
-  grid-row: 1/2;
+  grid-row: 1/6;
 }
 
 #mainRightSection{
   background-color: darkred;
   grid-column: 3;
-  grid-row: 1/2;
+  grid-row: 1/6;
 }
 
 .hide {
-  display: none;
+  visibility: collapse;
 }
 
 .show {
-  display: block;
+  visibility: visible;
 }

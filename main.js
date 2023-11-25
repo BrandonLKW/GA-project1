@@ -1,12 +1,12 @@
 //Global params
 const titleScreen = document.querySelector("#titleSection");
-const titleSubScreenHeader = document.querySelector("#titleHeaderSubSection");
-const titleSubScreenMenu = document.querySelector("#titleMenuSubSection");
-const gameScreen = document.querySelector("#mainGame");
-const gameSubScreenLeft = document.querySelector("#mainLeftSection");
-const gameSubScreenCenter = document.querySelector("#mainCenterSection");
-const gameSubScreenRight = document.querySelector("#mainRightSection");
 const startGameButton = document.querySelector("#startGameBtn");
+const hiscoresButton = document.querySelector("#hiscoresBtn");
+const settingsButton = document.querySelector("#settingsBtn");
+
+const gameScreenLeft = document.querySelector("#mainLeftSection");
+const gameScreenCenter = document.querySelector("#mainCenterSection");
+const gameScreenRight = document.querySelector("#mainRightSection");
 const endGameButton = document.querySelector("#exitGameBtn");
 
 
@@ -23,27 +23,28 @@ function hideElement(elementClasses){
 
 function resetRender(){
   hideElement(titleScreen.classList);
-  hideElement(titleSubScreenHeader.classList);
-  hideElement(titleSubScreenMenu.classList);
-  hideElement(gameScreen.classList);
-  hideElement(gameSubScreenLeft.classList);
-  hideElement(gameSubScreenCenter.classList);
-  hideElement(gameSubScreenRight.classList);
+  hideElement(startGameButton.classList);
+  hideElement(hiscoresButton.classList);
+  hideElement(settingsButton.classList);
+
+  hideElement(gameScreenLeft.classList);
+  hideElement(gameScreenCenter.classList);
+  hideElement(gameScreenRight.classList);
 }
 
 function renderTitleScreen(){
   resetRender();
-  loadElement(titleSection.classList);
-  loadElement(titleHeaderSubSection.classList);
-  loadElement(titleMenuSubSection.classList);
+  loadElement(titleScreen.classList);
+  loadElement(startGameButton.classList);
+  loadElement(hiscoresButton.classList);
+  loadElement(settingsButton.classList);
 }
 
 function renderGameScreen(){
   resetRender();
-  loadElement(gameScreen.classList);
-  loadElement(mainLeftSection.classList);
-  loadElement(mainCenterSection.classList);
-  loadElement(mainRightSection.classList);
+  loadElement(gameScreenLeft.classList);
+  loadElement(gameScreenCenter.classList);
+  loadElement(gameScreenRight.classList);
 }
 
 //Button events
@@ -66,12 +67,23 @@ function initButtons(){
 //event = "keydown"
 
 
+// //* Add a new element to the DOM
+// //* 1. create the new element
+// const img = document.createElement("img");
+// //* 2. maybe modify the element
+// img.setAttribute("src", "https://picsum.photos/id/111/200/300");
+// console.log(img); //? <img>
+// //* 3. add the element to the DOM
+// //* 3A , find the parent to add to
+// const body = document.querySelector("p");
+// //* 3B, actually do the add
+// body.append(img);
+
+
 //Fire all logic
 function main(){
   initButtons();
   renderTitleScreen();
-  console.log(titleScreen.classList);
-  console.log(gameScreen.classList);
 }
 
 main();
