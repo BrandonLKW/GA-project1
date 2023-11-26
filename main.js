@@ -16,20 +16,57 @@ const clearLnButton = document.querySelector("#clearLnBtn");
 let currentTetromino = null;
 let currentTetrominoShapeArray = [];
 let currentMovementInput = "";
-const gameSpeed = 1500; //set by difficulty
+const gameSpeed = 1000; //set by difficulty
+
+//Images
+const whiteColour = "\\images\\white-box.png";
+const redColour = "\\images\\red-box.png";
+const blueColour = "\\images\\blue-box.png";
+const greenColour = "\\images\\green-box.png";
+const yellowColour = "\\images\\yellow-box.png";
+const purpleColour = "\\images\\purple-box.png";
+const tealColour = "\\images\\teal-box.png";
+const orangeColour = "\\images\\orange-box.png";
 
 class Tetromino{
   constructor(coords, shape){
     this.coords = coords; //element id
     this.shape = shape;
+    this.colour = "";
     this.shapeRotation = 0;
     this.coordsArray = [];
     this.isLocked = false;
     this.hasEnded = false;
+
+    this.setColour();
   }
 
-  rotate(){
-    //WIP
+  setColour(){
+    switch (this.shape){
+      case "I":
+        this.colour = tealColour;
+        break;
+      case "J":
+        this.colour = blueColour;
+        break;
+      case "L":
+        this.colour = orangeColour;
+        break;
+      case "O":
+        this.colour = yellowColour;
+        break;
+      case "S":
+        this.colour = greenColour;
+        break;
+      case "Z":
+        this.colour = redColour
+        break;
+      case "T":
+        this.colour = purpleColour
+        break;
+      default:
+        break;
+    }
   }
 }
 
@@ -94,6 +131,7 @@ function initButtons(){
     event.preventDefault();
     resetRender();
     renderTitleScreen();
+    resetGame();
   });
   testButton.addEventListener("click", (event) => {
     startGame();
@@ -106,7 +144,6 @@ function initButtons(){
 //Keyboard events
 function initKeyboardEvents(){
   document.addEventListener("keydown", (event) => {
-    console.log(event.key);
     switch (event.key){
       case "ArrowLeft":
         currentMovementInput = "LEFT";
@@ -135,7 +172,7 @@ function createPlayArea(){
     for (let x = 0; x < 10; x++){
       //Create html element
       const cell = document.createElement("img");
-      cell.setAttribute("src", "white-box.png");
+      cell.setAttribute("src", whiteColour);
       cell.setAttribute("width", "100%");
       cell.setAttribute("height", "100%");
       cell.setAttribute("border", "1px solid");
@@ -157,12 +194,11 @@ function startGame(){
     }
     if (currentTetromino === null || currentTetromino.hasEnded){
       clearLine(); //once piece has landed, check if any lines are solved
-
       //Create new piece as needed
       currentTetromino = new Tetromino("x4y1", pullRandomTetromino());
       currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
-      colourCells(currentTetromino.coordsArray, "red-box.png");
-      intervalCount = 0; //reset interval
+      colourCells(currentTetromino.coordsArray, currentTetromino.colour);
+      intervalCount = 0; //reset timer
     }
     if (currentTetromino.isLocked){
       //If hard drop, no interation allowed
@@ -170,7 +206,7 @@ function startGame(){
       intervalCount = 0;
     } else{
       //Otherwise proceed game logic as usual
-      if (intervalCount === gameSpeed){
+      if (intervalCount >= gameSpeed){
         //Default falling logic, based on game speed and used to determine if new piece is needed
         let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
         if (yCoordBefore <= 20){ //y21 is lowest point in play area
@@ -182,10 +218,11 @@ function startGame(){
         if (currentMovementInput !== ""){
           moveTetromino(currentMovementInput);
         }
-        intervalCount += 100;
       }
     }
+    intervalCount += 100;
     currentMovementInput = "";
+    console.log(intervalCount);
   }, 100); //use 0.1sec tick to detect user input for now
 }
 
@@ -465,7 +502,7 @@ function moveTetromino(direction){
   let isFilled = false;
   for (const newCoords of newCoordsArray){
     const newCell = document.querySelector("#" + newCoords);
-    if (newCell.getAttribute("src") === "red-box.png"){
+    if (newCell.getAttribute("src") !== whiteColour){
       isFilled = true;
     }
   }
@@ -473,8 +510,8 @@ function moveTetromino(direction){
     //If movement is allowed, colour new cells with shape colour
     currentTetromino.coords = nextCoords;
     currentTetromino.coordsArray = nextCoordsArray;
-    colourCells(newCoordsArray, "red-box.png");
-    colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
+    colourCells(newCoordsArray, currentTetromino.colour);
+    colourCells(unusedCoordsArray, whiteColour); //Colour unused cells white again
   } 
   //check future y axis changes, if no changes means that floor is reached
   //check all lowest y-axis values from the coordsArray of the currentTetrominio object
@@ -491,12 +528,8 @@ function moveTetromino(direction){
       if (newCoord.includes("y" + lowestYCoord)){
         const futureXCoord = parseInt(newCoord.substring(2,1));
         const futureCell = document.querySelector("#x" + futureXCoord + "y"  + futureYCoord);
-        if (futureCell.getAttribute("src") === "red-box.png"){
+        if (futureCell.getAttribute("src") !== whiteColour){
           currentTetromino.hasEnded = true;
-          console.log("next coords", nextCoordsArray);
-          console.log("new coords", newCoordsArray);
-          console.log("unused coords", unusedCoordsArray);
-          console.log("future", futureCell);
         }
       }
     }
@@ -515,7 +548,7 @@ function clearLine(){
     for (let x = 0; x < 10; x++){
       const cellCoords = "#x" + x + "y" + y;
       const cell = document.querySelector(cellCoords);
-      if (cell.getAttribute("src") === "white-box.png"){
+      if (cell.getAttribute("src") === whiteColour){
         hasCompletedLine = false;
       }
       xAxisArray.push(cell);
@@ -538,7 +571,7 @@ function clearLine(){
     for (let lines = 0; lines < completedLines; lines++){
       for (let i = 0; i < 10; i++){
         const cell = document.createElement("img");
-        cell.setAttribute("src", "white-box.png");
+        cell.setAttribute("src", whiteColour);
         cell.setAttribute("width", "100%"); 
         cell.setAttribute("height", "100%");
         cell.setAttribute("border", "1px solid");
