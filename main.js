@@ -14,6 +14,7 @@ const testButton = document.querySelector("#testShapeBtn");
 const clearLnButton = document.querySelector("#clearLnBtn");
 
 let currentTetromino = null;
+let currentTetrominoShapeArray = [];
 let currentMovementInput = "";
 const gameSpeed = 1500; //set by difficulty
 
@@ -29,6 +30,18 @@ class Tetromino{
   rotate(){
     //WIP
   }
+}
+
+function pullRandomTetromino(){
+  //Cycles through all shapes once before resetting again
+  if (currentTetrominoShapeArray.length === 0){
+    currentTetrominoShapeArray = ["I", "J", "L", "O", "S", "Z", "T"];
+  }
+  //https://stackoverflow.com/questions/4550505/getting-a-random-value-from-a-javascript-array
+  const randomIndex = Math.floor(Math.random() * currentTetrominoShapeArray.length);
+  const randomValue = currentTetrominoShapeArray[randomIndex];
+  currentTetrominoShapeArray.splice(randomIndex, 1);
+  return randomValue;
 }
 
 
@@ -109,10 +122,10 @@ function initKeyboardEvents(){
 
 //build play area
 //width = 10 cells, height = 20 cells (x1y1, x2y1)
-//20 cells hidden buffer above play area
+//2 cells hidden buffer above play area, to generate and drop tetromino
 function createPlayArea(){ 
   //new array
-  for (let y = 0; y < 20; y++){
+  for (let y = 0; y < 22; y++){
     for (let x = 0; x < 10; x++){
       //Create html element
       const cell = document.createElement("img");
@@ -141,8 +154,8 @@ function startGame(){
       clearLine(); 
 
       //Create new piece as needed
-      currentTetromino = new Tetromino("x4y0", "one-block");
-      currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
+      currentTetromino = new Tetromino("x4y1", pullRandomTetromino());
+      currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape); 
       colourCells(currentTetromino.coordsArray, "red-box.png");
       intervalCount = 0; //reset interval
     }
@@ -155,7 +168,7 @@ function startGame(){
       if (intervalCount === gameSpeed){
         //Default falling logic, based on game speed and used to determine if new piece is needed
         let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
-        if (yCoordBefore <= 18){ //y19 is lowest point in play area
+        if (yCoordBefore <= 20){ //y21 is lowest point in play area
           moveTetromino("FALL");
         } 
         intervalCount = 0;
@@ -178,10 +191,67 @@ function resetGame(){
 
 //Create array of x-y coords based on main coords and shape
 function generateShape(coords, shape){
-  const mainCell = document.querySelector(coords); //#x4y0
+  let xCoords = parseInt(coords.substring(2, 1));
+  let yCoords = parseInt(coords.substring(3));
   const cellArray = [];
-  //Based on shape, generate adjacent cells
+  //{} -> denotes mainCell, [] -> denotes adj cells
   switch (shape){
+    case "I":
+      // ("")("")("")("")
+      // ([])({})([])([])
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords + 2) + "y" + yCoords);
+      break;
+    case "J":
+      // ([])("")("")("")
+      // ([])({})([])("")
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      break;
+    case "L":
+      // ("")("")([])("")
+      // ([])({})([])("")
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      break;
+    case "O":
+      // ([])([])("")("")
+      // ([])({})("")("") //no rotation needed
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+      cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+      break;
+    case "S":
+      // ("")([])([])("")
+      // ([])({})("")("")
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+      cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      break;
+    case "Z":
+      // ([])([])("")("")
+      // ("")({})([])("")
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+      cellArray.push("x" + xCoords + "y" + (yCoords- 1));
+      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      break;
+    case "T":
+      // ("")([])("")("")
+      // ([])({})([])("")
+      cellArray.push(coords);
+      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+      break;
     default:
       cellArray.push(coords);
       break;  
@@ -196,7 +266,7 @@ function colourCells(coordsArray, colour){
   }
 }
 
-function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = y3
+function moveTetromino(direction){
   //Determine x-y coords based on direction
   const mainCell = document.querySelector("#" + currentTetromino.coords);
   let xCoord = parseInt(mainCell.getAttribute("id").substring(2,1));
@@ -216,7 +286,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
       currentTetromino.isLocked = true;
       break;
     case "FALL":
-      if (yCoord !== 19){
+      if (yCoord !== 21){
         yCoord += 1;
       }
       break;
@@ -225,7 +295,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
   }
   //Check if new position is available for shape
   const nextCoords = "x" + xCoord + "y" + yCoord;
-  const nextCoordsArray = generateShape(nextCoords, "test"); 
+  const nextCoordsArray = generateShape(nextCoords, currentTetromino.shape); 
   //Exclude common cells (comparing prev and next), then check if these new cells are already filled
   const newCoordsArray = nextCoordsArray.filter((nextCoords) => !currentTetromino.coordsArray.includes(nextCoords));
   const unusedCoordsArray = currentTetromino.coordsArray.filter((nextCoords) => !nextCoordsArray.includes(nextCoords));
@@ -244,7 +314,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
     colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
   } 
   //check future y axis changes, if no changes means that floor is reached
-  if ((yCoord + 1) <= 19){
+  if ((yCoord + 1) <= 21){
     const futureCell = document.querySelector("#x" + xCoord + "y" + (yCoord + 1));
     if (futureCell.getAttribute("src") === "red-box.png"){
       currentTetromino.hasEnded = true;
@@ -259,7 +329,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
 //Cycle through each row to check if all are coloured
 function clearLine(){
   const completedRows = []; //store indices of completed lines
-  for (let y = 0; y < 20; y++){
+  for (let y = 0; y < 22; y++){
     let hasCompletedLine = true;
     const xAxisArray = [];
     for (let x = 0; x < 10; x++){
