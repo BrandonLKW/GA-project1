@@ -11,6 +11,7 @@ const gameScreenRight = document.querySelector("#mainRightSection");
 const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
 const testButton = document.querySelector("#testShapeBtn");
+const clearLnButton = document.querySelector("#clearLnBtn");
 
 let currentTetromino = null;
 let currentMovementInput = "";
@@ -83,6 +84,9 @@ function initButtons(){
   testButton.addEventListener("click", (event) => {
     startGame();
   });
+  clearLnButton.addEventListener("click", (event) => {
+    clearLine();
+  })
 }
 
 //Keyboard events
@@ -106,15 +110,10 @@ function initKeyboardEvents(){
 //build play area
 //width = 10 cells, height = 20 cells (x1y1, x2y1)
 //20 cells hidden buffer above play area
-let playAreaArray = [];
-//loop through x-axis first
 function createPlayArea(){ 
   //new array
   for (let y = 0; y < 20; y++){
-    const playAreaXaxis = [];
     for (let x = 0; x < 10; x++){
-      //Create data
-      playAreaXaxis.push(0);
       //Create html element
       const cell = document.createElement("img");
       cell.setAttribute("src", "white-box.png");
@@ -122,10 +121,8 @@ function createPlayArea(){
       cell.setAttribute("height", "100%");
       cell.setAttribute("border", "1px solid");
       cell.setAttribute("id", "x"+ x +"y" + y);
-      //define width/height of playarea, then assign based on cell coords
       playArea.append(cell);
     }
-    playAreaArray.push(playAreaXaxis);
   }
 }
 
@@ -140,6 +137,9 @@ function startGame(){
       clearInterval(intervalId);
     }
     if (currentTetromino === null || currentTetromino.hasEnded){
+      //once piece has landed, check if any lines are solved
+      clearLine(); 
+
       //Create new piece as needed
       currentTetromino = new Tetromino("x4y0", "one-block");
       currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
@@ -168,6 +168,7 @@ function startGame(){
         intervalCount += 100;
       }
     }
+    
   }, 100); //use 0.1sec tick to detect user input for now
 }
 
@@ -254,10 +255,61 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
   
 }
 
-
 //function to check if line is formed and to clear it
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fill
-//a = Array(5).fill(0).map(x => Array(10).fill(0)) use fill to check landed pieces
+//Cycle through each row to check if all are coloured
+function clearLine(){
+  const completedRows = []; //store indices of completed lines
+  for (let y = 0; y < 20; y++){
+    let hasCompletedLine = true;
+    const xAxisArray = [];
+    for (let x = 0; x < 10; x++){
+      const cellCoords = "#x" + x + "y" + y;
+      const cell = document.querySelector(cellCoords);
+      if (cell.getAttribute("src") === "white-box.png"){
+        hasCompletedLine = false;
+      }
+      xAxisArray.push(cell);
+    }
+    if (hasCompletedLine){
+      completedRows.push(xAxisArray);
+    }
+  }
+  //remove entire row of cells
+  //generate the missing rows of cells again
+  //reassign id again
+  const completedLines = completedRows.length;
+  if (completedLines > 0){
+    for (const xAxisArray of completedRows){
+      for (const xAxis of xAxisArray){
+        playArea.removeChild(xAxis);
+      }
+    }
+    //add to the start of the list so that existing rows are pushed down, since id starts on top with x0y0
+    for (let lines = 0; lines < completedLines; lines++){
+      for (let i = 0; i < 10; i++){
+        const cell = document.createElement("img");
+        cell.setAttribute("src", "white-box.png");
+        cell.setAttribute("width", "100%"); 
+        cell.setAttribute("height", "100%");
+        cell.setAttribute("border", "1px solid");
+        cell.setAttribute("id", "placeholder");
+        playArea.prepend(cell);
+      }
+    }
+    //Cycle through playarea and reassign id again
+    let yIndex = 0;
+    let xIndex = 0;
+    const allCells = playArea.children;
+    for (const cell of allCells){
+      if (xIndex === 10){
+        xIndex = 0;
+        yIndex += 1;
+      }
+      cell.setAttribute("id", "x"+ xIndex +"y" + yIndex);
+      xIndex += 1;
+    }
+  }   
+}
 
 
 //Fire all logic
