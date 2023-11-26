@@ -22,6 +22,7 @@ class Tetromino{
     this.shape = shape;
     this.coordsArray = [];
     this.isLocked = false;
+    this.hasEnded = false;
   }
 
   rotate(){
@@ -80,7 +81,7 @@ function initButtons(){
     renderTitleScreen();
   });
   testButton.addEventListener("click", (event) => {
-    createTetromino();
+    startGame();
   });
 }
 
@@ -126,33 +127,59 @@ function createPlayArea(){
     }
     playAreaArray.push(playAreaXaxis);
   }
-  console.log(playAreaArray);
 }
 
 //function to create tetrominos in the middle of the first line of play area (x4y0, x5y0)
-function createTetromino(){
-  currentTetromino = new Tetromino("x4y0", "one-block");
-  currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
-  colourCells(currentTetromino.coordsArray, "red-box.png");
-
-  //https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
-  let intervalCount = 0;
+//https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
+function startGame(){
+  let gameOver = false;
+  let intervalCount = 0; //for syncing with determined game speed
   intervalId = setInterval(() => {
-    if (intervalCount === gameSpeed){
-      if (currentTetromino.coords !== "x4y19"){
-        moveTetromino("FALL");
-      } else{
-        clearInterval(intervalId);
-      }
-      intervalCount = 0;
+    if (gameOver){
+      //Break loop once game over flagged
+      clearInterval(intervalId);
+    }
+    if (currentTetromino === null || currentTetromino.hasEnded){
+      //Create new piece as needed
+      currentTetromino = new Tetromino("x4y0", "one-block");
+      currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
+      colourCells(currentTetromino.coordsArray, "red-box.png");
+    }
+    if (currentTetromino.isLocked){
+      //If hard drop, no interation allowed
+      moveTetromino("FALL");
     } else{
-      if (currentMovementInput !== ""){
-        moveTetromino(currentMovementInput);
-        currentMovementInput = "";
+      //Otherwise proceed as usual
+      if (intervalCount === gameSpeed){
+        //Default falling logic, based on game speed and used to determine if new piece is needed
+        let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
+        if (yCoordBefore <= 18){ //y19 is lowest point in play area
+          //Compare before and after y coords to determine if floor has been reached
+          moveTetromino("FALL");
+          let yCoordAfter = parseInt(currentTetromino.coords.substring(3));
+          console.log(yCoordBefore);
+          console.log(yCoordAfter);
+          if (yCoordBefore === yCoordAfter){
+            currentTetromino.hasEnded = true;
+          }
+        } else {
+          currentTetromino.hasEnded = true;
+        }
+        intervalCount = 0;
+      } else{
+        //Allow movement on the other ticks that the default falling logic is not on
+        if (currentMovementInput !== ""){
+          moveTetromino(currentMovementInput);
+          currentMovementInput = "";
+        }
+        intervalCount += 100;
       }
-      intervalCount += 100;
     }
   }, 100); //use 0.1sec tick to detect user input for now
+}
+
+function resetGame(){
+  playArea.innerHTML = "";
 }
 
 //Create array of x-y coords based on main coords and shape
@@ -182,16 +209,22 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
   let yCoord = parseInt(mainCell.getAttribute("id").substring(3));
   switch(direction){
     case "LEFT":
-      xCoord -= 1;
+      if (xCoord !== 0){
+        xCoord -= 1;
+      }
       break;
     case "RIGHT":
-      xCoord += 1;
+      if (xCoord !== 9){
+        xCoord += 1;
+      }
       break;
     case "HARD_FALL":
       mainCell.isLocked = true;
       break;
     case "FALL":
-      yCoord += 1;
+      if (yCoord !== 19){
+        yCoord += 1;
+      }
       break;
     default:
       break;
@@ -215,9 +248,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
     currentTetromino.coordsArray = nextCoordsArray;
     colourCells(newCoordsArray, "red-box.png");
     colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
-  } else{
-    //If floor is reached, then end function
-  }
+  } 
 }
 
 
