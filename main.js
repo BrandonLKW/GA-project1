@@ -12,6 +12,24 @@ const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
 const testButton = document.querySelector("#testShapeBtn");
 
+let currentTetromino = null;
+let currentMovementInput = "";
+const gameSpeed = 1500; //set by difficulty
+
+class Tetromino{
+  constructor(coords, shape){
+    this.coords = coords; //element id
+    this.shape = shape;
+    this.coordsArray = [];
+    this.isLocked = false;
+  }
+
+  rotate(){
+    //WIP
+  }
+}
+
+
 //Render methods
 function loadElement(elementClasses){
   elementClasses.remove("hide");
@@ -71,16 +89,13 @@ function initKeyboardEvents(){
   document.addEventListener("keydown", (event) => {
     switch (event.key){
       case "ArrowLeft":
-        console.log("LEFT ARROW PRESSED");
+        currentMovementInput = "LEFT";
         break;
       case "ArrowRight":
-        console.log("RIGHT ARROW PRESSED");
-        break;
-      case "ArrowDown":
-        console.log("DOWN ARROW PRESSED");
+        currentMovementInput = "RIGHT";
         break;
       case " ":
-        console.log("SPACE PRESSED")
+        currentMovementInput = "HARD_FALL";
       default:
         break;
     }
@@ -99,7 +114,6 @@ function createPlayArea(){
     for (let x = 0; x < 10; x++){
       //Create data
       playAreaXaxis.push(0);
-
       //Create html element
       const cell = document.createElement("img");
       cell.setAttribute("src", "white-box.png");
@@ -117,35 +131,93 @@ function createPlayArea(){
 
 //function to create tetrominos in the middle of the first line of play area (x4y0, x5y0)
 function createTetromino(){
-  const cell = document.querySelector("#x4y0");
-  console.log(cell);
-  //Check playarea to confirm not occupied
-  if (cell.getAttribute("src") === "white-box.png"){
-    cell.setAttribute("src", "red-box.png");
-  } else{
-    console.log("Game over");
-  }
-  testFallingLogic(cell);
+  currentTetromino = new Tetromino("x4y0", "one-block");
+  currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
+  colourCells(currentTetromino.coordsArray, "red-box.png");
+
+  //https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
+  let intervalCount = 0;
+  intervalId = setInterval(() => {
+    if (intervalCount === gameSpeed){
+      if (currentTetromino.coords !== "x4y19"){
+        moveTetromino("FALL");
+      } else{
+        clearInterval(intervalId);
+      }
+      intervalCount = 0;
+    } else{
+      if (currentMovementInput !== ""){
+        moveTetromino(currentMovementInput);
+        currentMovementInput = "";
+      }
+      intervalCount += 100;
+    }
+  }, 100); //use 0.1sec tick to detect user input for now
 }
 
-//https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
-function testFallingLogic(cell){
-  let currentCell = cell;
-  console.log(currentCell.getAttribute("id"));
-  intervalId = setInterval(() => {
-    if (currentCell.getAttribute("id") !== "x4y19"){
-      currentCell.setAttribute("src", "white-box.png");
-      //Get upcoming cell coords
-      let xCoord = parseInt(currentCell.getAttribute("id").substring(2,1)); //get upcoming x coord (range of 0-9)
-      let yCoord = parseInt(currentCell.getAttribute("id").substring(3)) + 1; //get upcoming y coord (range of 0-19)
-      cellCoord = "x" + xCoord + "y" + yCoord; //this is the updated coords, to be used for further iterations
-      console.log("testcoord", "x" + xCoord + "y" + yCoord);
-      currentCell = document.querySelector("#" + cellCoord);
-      currentCell.setAttribute("src", "red-box.png");
-    } else{
-      clearInterval(intervalId);
+//Create array of x-y coords based on main coords and shape
+function generateShape(coords, shape){
+  const mainCell = document.querySelector(coords); //#x4y0
+  const cellArray = [];
+  //Based on shape, generate adjacent cells
+  switch (shape){
+    default:
+      cellArray.push(coords);
+      break;  
+  }
+  return cellArray;
+}
+
+function colourCells(coordsArray, colour){
+  for (const coords of coordsArray){
+    const cell = document.querySelector("#" + coords);
+    cell.setAttribute("src", colour);
+  }
+}
+
+function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = y3
+  //Determine x-y coords based on direction
+  const mainCell = document.querySelector("#" + currentTetromino.coords);
+  let xCoord = parseInt(mainCell.getAttribute("id").substring(2,1));
+  let yCoord = parseInt(mainCell.getAttribute("id").substring(3));
+  switch(direction){
+    case "LEFT":
+      xCoord -= 1;
+      break;
+    case "RIGHT":
+      xCoord += 1;
+      break;
+    case "HARD_FALL":
+      mainCell.isLocked = true;
+      break;
+    case "FALL":
+      yCoord += 1;
+      break;
+    default:
+      break;
+  }
+  //Check if new position is available for shape
+  const nextCoords = "x" + xCoord + "y" + yCoord;
+  const nextCoordsArray = generateShape(nextCoords, "test"); 
+  //Exclude common cells (comparing prev and next), then check if these new cells are already filled
+  const newCoordsArray = nextCoordsArray.filter((nextCoords) => !currentTetromino.coordsArray.includes(nextCoords));
+  const unusedCoordsArray = currentTetromino.coordsArray.filter((nextCoords) => !nextCoordsArray.includes(nextCoords));
+  let isFilled = false;
+  for (const newCoords of newCoordsArray){
+    const newCell = document.querySelector("#" + newCoords);
+    if (newCell.getAttribute("src") === "red-box.png"){
+      isFilled = true;
     }
-  }, 2000);
+  }
+  if (!isFilled){
+    //If movement is allowed, colour new cells with shape colour
+    currentTetromino.coords = nextCoords;
+    currentTetromino.coordsArray = nextCoordsArray;
+    colourCells(newCoordsArray, "red-box.png");
+    colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
+  } else{
+    //If floor is reached, then end function
+  }
 }
 
 
