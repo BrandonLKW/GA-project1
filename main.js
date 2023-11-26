@@ -22,6 +22,7 @@ class Tetromino{
   constructor(coords, shape){
     this.coords = coords; //element id
     this.shape = shape;
+    this.shapeRotation = 0;
     this.coordsArray = [];
     this.isLocked = false;
     this.hasEnded = false;
@@ -105,6 +106,7 @@ function initButtons(){
 //Keyboard events
 function initKeyboardEvents(){
   document.addEventListener("keydown", (event) => {
+    console.log(event.key);
     switch (event.key){
       case "ArrowLeft":
         currentMovementInput = "LEFT";
@@ -114,6 +116,10 @@ function initKeyboardEvents(){
         break;
       case " ":
         currentMovementInput = "HARD_FALL";
+        break;
+      case "r":
+        currentMovementInput = "ROTATE";
+        break;
       default:
         break;
     }
@@ -150,12 +156,11 @@ function startGame(){
       clearInterval(intervalId);
     }
     if (currentTetromino === null || currentTetromino.hasEnded){
-      //once piece has landed, check if any lines are solved
-      clearLine(); 
+      clearLine(); //once piece has landed, check if any lines are solved
 
       //Create new piece as needed
       currentTetromino = new Tetromino("x4y1", pullRandomTetromino());
-      currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape); 
+      currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
       colourCells(currentTetromino.coordsArray, "red-box.png");
       intervalCount = 0; //reset interval
     }
@@ -164,7 +169,7 @@ function startGame(){
       moveTetromino("FALL");
       intervalCount = 0;
     } else{
-      //Otherwise proceed as usual
+      //Otherwise proceed game logic as usual
       if (intervalCount === gameSpeed){
         //Default falling logic, based on game speed and used to determine if new piece is needed
         let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
@@ -176,12 +181,11 @@ function startGame(){
         //Allow movement on the other ticks that the default falling logic is not on
         if (currentMovementInput !== ""){
           moveTetromino(currentMovementInput);
-          currentMovementInput = "";
         }
         intervalCount += 100;
       }
     }
-    
+    currentMovementInput = "";
   }, 100); //use 0.1sec tick to detect user input for now
 }
 
@@ -190,70 +194,211 @@ function resetGame(){
 }
 
 //Create array of x-y coords based on main coords and shape
-function generateShape(coords, shape){
+function generateShape(coords, shape, rotation){
   let xCoords = parseInt(coords.substring(2, 1));
   let yCoords = parseInt(coords.substring(3));
   const cellArray = [];
+  cellArray.push(coords);
   //{} -> denotes mainCell, [] -> denotes adj cells
   switch (shape){
     case "I":
-      // ("")("")("")("")
-      // ([])({})([])([])
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords + 2) + "y" + yCoords);
+      if (rotation === 1){
+        //position 1
+        // ([])("")("")("")
+        // ([])("")("")("")
+        // ({})("")("")("")
+        // ([])("")("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 2));
+      } else{
+        //position 0
+        // ("")("")("")("")
+        // ([])({})([])([])
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 2) + "y" + yCoords);
+      }
       break;
     case "J":
-      // ([])("")("")("")
-      // ([])({})([])("")
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
-      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      if (rotation === 1){
+        //position 1
+        // ([])([])("")("")
+        // ({})("")("")("")
+        // ([])("")("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      } else if (rotation === 2){
+        //position 2
+        // ("")("")("")("")
+        // ([])({})([])("")
+        // ("")("")([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords + 1));
+      } else if (rotation === 3){
+        //position 3
+        // ("")([])("")("")
+        // ("")({})("")("")
+        // ([])([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords + 1));
+      } else{
+        //position 0
+        // ([])("")("")("")
+        // ([])({})([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      }
       break;
     case "L":
-      // ("")("")([])("")
-      // ([])({})([])("")
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      if (rotation === 1){
+        //position 1
+        // ([])("")("")("")
+        // ({})("")("")("")
+        // ([])([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords + 1));
+      } else if (rotation === 2){
+        //position 2
+        // ("")("")("")("")
+        // ([])({})([])("")
+        // ([])("")("")("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords + 1));
+      } else if (rotation === 3){
+        //position 3
+        // ([])([])("")("")
+        // ("")({})("")("")
+        // ("")([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+      } else{
+        //position 0
+        // ("")("")([])("")
+        // ([])({})([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      }
       break;
     case "O":
+      //position 0
       // ([])([])("")("")
       // ([])({})("")("") //no rotation needed
-      cellArray.push(coords);
       cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
       cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
       cellArray.push("x" + xCoords + "y" + (yCoords - 1));
       break;
     case "S":
-      // ("")([])([])("")
-      // ([])({})("")("")
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
-      cellArray.push("x" + xCoords + "y" + (yCoords - 1));
-      cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      if (rotation === 1){
+        //position 1
+        // ("")([])("")("")
+        // ("")({})([])("")
+        // ("")("")([])("")
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords + 1));
+      } else if (rotation === 2){
+        //position 2
+        // ("")("")("")("")
+        // ("")({})([])("")
+        // ([])([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      } else if (rotation === 3){
+        //position 3
+        // ([])("")("")("")
+        // ([])({})("")("")
+        // ("")([])("")("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+      } else{
+        //position 0
+        // ("")([])([])("")
+        // ([])({})("")("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      }
       break;
     case "Z":
-      // ([])([])("")("")
-      // ("")({})([])("")
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
-      cellArray.push("x" + xCoords + "y" + (yCoords- 1));
-      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      if (rotation === 1){
+        //position 1
+        // ("")("")([])("")
+        // ("")({})([])("")
+        // ("")([])("")("")
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords - 1));
+      } else if (rotation === 2){
+        //position 2
+        // ("")("")("")("")
+        // ([])({})("")("")
+        // ("")([])([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + (yCoords + 1));
+      } else if (rotation === 3){
+        //position 3
+        // ("")([])("")("")
+        // ([])({})("")("")
+        // ([])("")("")("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords + 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+      } else{
+        //position 0
+        // ([])([])("")("")
+        // ("")({})([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords- 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      }
       break;
     case "T":
-      // ("")([])("")("")
-      // ([])({})([])("")
-      cellArray.push(coords);
-      cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
-      cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
-      cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+      if (rotation === 1){
+        //position 1
+        // ("")([])("")("")
+        // ("")({})([])("")
+        // ("")([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+      } else if (rotation === 2){
+        //position 2
+        // ("")("")("")("")
+        // ([])({})([])("")
+        // ("")([])("")("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+      } else if (rotation === 3){
+        //position 3
+        // ("")([])("")("")
+        // ([])({})("")("")
+        // ("")([])("")("")
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+      } else{
+        //position 0
+        // ("")([])("")("")
+        // ([])({})([])("")
+        cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
+        cellArray.push("x" + (xCoords + 1) + "y" + yCoords);
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
+      }
       break;
     default:
-      cellArray.push(coords);
       break;  
   }
   return cellArray;
@@ -290,12 +435,30 @@ function moveTetromino(direction){
         yCoord += 1;
       }
       break;
+    case "ROTATE":
+      currentTetromino.shapeRotation += 1; // +1 per rotate action
+      switch (currentTetromino.shape){
+        case "I":
+          if (currentTetromino.shapeRotation > 1){
+            currentTetromino.shapeRotation = 0;
+          }
+          break;
+        case "O":
+          currentTetromino.shapeRotation = 0;
+          break;
+        default:
+          if (currentTetromino.shapeRotation > 3){
+            currentTetromino.shapeRotation = 0;
+          }
+          break;  
+      }
+      break;
     default:
       break;
   }
   //Check if new position is available for shape
   const nextCoords = "x" + xCoord + "y" + yCoord;
-  const nextCoordsArray = generateShape(nextCoords, currentTetromino.shape); 
+  const nextCoordsArray = generateShape(nextCoords, currentTetromino.shape, currentTetromino.shapeRotation); 
   //Exclude common cells (comparing prev and next), then check if these new cells are already filled
   const newCoordsArray = nextCoordsArray.filter((nextCoords) => !currentTetromino.coordsArray.includes(nextCoords));
   const unusedCoordsArray = currentTetromino.coordsArray.filter((nextCoords) => !nextCoordsArray.includes(nextCoords));
@@ -314,15 +477,28 @@ function moveTetromino(direction){
     colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
   } 
   //check future y axis changes, if no changes means that floor is reached
-  if ((yCoord + 1) <= 21){
-    const futureCell = document.querySelector("#x" + xCoord + "y" + (yCoord + 1));
-    if (futureCell.getAttribute("src") === "red-box.png"){
-      currentTetromino.hasEnded = true;
+  //check all lowest y-axis values from the coordsArray of the currentTetrominio object
+  let lowestYCoord = 0;
+  for (const newCoord of newCoordsArray){
+    const yCoord = parseInt(newCoord.substring(3));
+    if (yCoord > lowestYCoord){
+      lowestYCoord = yCoord;
+    }
+  }
+  let futureYCoord = lowestYCoord + 1;
+  if (futureYCoord <= 21){
+    for (const newCoord of newCoordsArray){
+      if (newCoord.includes("y" + lowestYCoord)){
+        const futureXCoord = parseInt(newCoord.substring(2,1));
+        const futureCell = document.querySelector("#x" + futureXCoord + "y"  + futureYCoord);
+        if (futureCell.getAttribute("src") === "red-box.png"){
+          currentTetromino.hasEnded = true;
+        }
+      }
     }
   } else{
     currentTetromino.hasEnded = true;
   }
-  
 }
 
 //function to check if line is formed and to clear it
