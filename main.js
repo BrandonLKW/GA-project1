@@ -189,11 +189,18 @@ function startGame(){
   let intervalCount = 0; //for syncing with determined game speed
   intervalId = setInterval(() => {
     if (gameOver){
-      //Break loop once game over flagged
       clearInterval(intervalId);
     }
     if (currentTetromino === null || currentTetromino.hasEnded){
       clearLine(); //once piece has landed, check if any lines are solved
+      //Check 2nd topmost row for any obstructions before creation, otherwise game over
+      for (let x = 0; x < 10; x++){
+        const topCell = document.querySelector("#x" + x + "y1");
+        if (topCell.getAttribute("src") !== whiteColour){
+          gameOver = true;
+          return;
+        }
+      }
       //Create new piece as needed
       currentTetromino = new Tetromino("x4y1", pullRandomTetromino());
       currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
@@ -224,6 +231,7 @@ function startGame(){
     currentMovementInput = "";
     console.log(intervalCount);
   }, 100); //use 0.1sec tick to detect user input for now
+  //resetGame();
 }
 
 function resetGame(){
@@ -593,7 +601,6 @@ function clearLine(){
     }
   }   
 }
-
 
 //Fire all logic
 function main(){
