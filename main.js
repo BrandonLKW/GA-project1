@@ -354,7 +354,7 @@ function generateShape(coords, shape, rotation){
         // ([])("")("")("")
         cellArray.push("x" + (xCoords - 1) + "y" + yCoords);
         cellArray.push("x" + (xCoords - 1) + "y" + (yCoords + 1));
-        cellArray.push("x" + xCoords + "y" + (yCoords + 1));
+        cellArray.push("x" + xCoords + "y" + (yCoords - 1));
       } else{
         //position 0
         // ([])([])("")("")
@@ -479,7 +479,7 @@ function moveTetromino(direction){
   //check future y axis changes, if no changes means that floor is reached
   //check all lowest y-axis values from the coordsArray of the currentTetrominio object
   let lowestYCoord = 0;
-  for (const newCoord of newCoordsArray){
+  for (const newCoord of nextCoordsArray){
     const yCoord = parseInt(newCoord.substring(3));
     if (yCoord > lowestYCoord){
       lowestYCoord = yCoord;
@@ -487,12 +487,16 @@ function moveTetromino(direction){
   }
   let futureYCoord = lowestYCoord + 1;
   if (futureYCoord <= 21){
-    for (const newCoord of newCoordsArray){
+    for (const newCoord of nextCoordsArray){
       if (newCoord.includes("y" + lowestYCoord)){
         const futureXCoord = parseInt(newCoord.substring(2,1));
         const futureCell = document.querySelector("#x" + futureXCoord + "y"  + futureYCoord);
         if (futureCell.getAttribute("src") === "red-box.png"){
           currentTetromino.hasEnded = true;
+          console.log("next coords", nextCoordsArray);
+          console.log("new coords", newCoordsArray);
+          console.log("unused coords", unusedCoordsArray);
+          console.log("future", futureCell);
         }
       }
     }
