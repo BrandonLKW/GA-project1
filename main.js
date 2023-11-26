@@ -144,27 +144,20 @@ function startGame(){
       currentTetromino = new Tetromino("x4y0", "one-block");
       currentTetromino.coordsArray = generateShape(currentTetromino.coords, "test"); 
       colourCells(currentTetromino.coordsArray, "red-box.png");
+      intervalCount = 0; //reset interval
     }
     if (currentTetromino.isLocked){
       //If hard drop, no interation allowed
       moveTetromino("FALL");
+      intervalCount = 0;
     } else{
       //Otherwise proceed as usual
       if (intervalCount === gameSpeed){
         //Default falling logic, based on game speed and used to determine if new piece is needed
         let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
         if (yCoordBefore <= 18){ //y19 is lowest point in play area
-          //Compare before and after y coords to determine if floor has been reached
           moveTetromino("FALL");
-          let yCoordAfter = parseInt(currentTetromino.coords.substring(3));
-          console.log(yCoordBefore);
-          console.log(yCoordAfter);
-          if (yCoordBefore === yCoordAfter){
-            currentTetromino.hasEnded = true;
-          }
-        } else {
-          currentTetromino.hasEnded = true;
-        }
+        } 
         intervalCount = 0;
       } else{
         //Allow movement on the other ticks that the default falling logic is not on
@@ -219,7 +212,7 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
       }
       break;
     case "HARD_FALL":
-      mainCell.isLocked = true;
+      currentTetromino.isLocked = true;
       break;
     case "FALL":
       if (yCoord !== 19){
@@ -249,6 +242,16 @@ function moveTetromino(direction){ //compare vertically, e.g. prev = y2, next = 
     colourCells(newCoordsArray, "red-box.png");
     colourCells(unusedCoordsArray, "white-box.png"); //Colour unused cells white again
   } 
+  //check future y axis changes, if no changes means that floor is reached
+  if ((yCoord + 1) <= 19){
+    const futureCell = document.querySelector("#x" + xCoord + "y" + (yCoord + 1));
+    if (futureCell.getAttribute("src") === "red-box.png"){
+      currentTetromino.hasEnded = true;
+    }
+  } else{
+    currentTetromino.hasEnded = true;
+  }
+  
 }
 
 
