@@ -11,11 +11,13 @@ const gameScreenRight = document.querySelector("#mainRightSection");
 const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
 const testButton = document.querySelector("#testShapeBtn");
+const scoreLabel = document.querySelector("#scoreLabel");
 const clearLnButton = document.querySelector("#clearLnBtn");
-
+//Game runtime variables
 let currentTetromino = null;
 let currentTetrominoShapeArray = [];
 let currentMovementInput = "";
+let currentScore = 0;
 const gameSpeed = 1000; //set by difficulty
 
 //Images
@@ -70,7 +72,7 @@ class Tetromino{
   }
 }
 
-function pullRandomTetromino(){
+function getRandomShape(){
   //Cycles through all shapes once before resetting again
   if (currentTetrominoShapeArray.length === 0){
     currentTetrominoShapeArray = ["I", "J", "L", "O", "S", "Z", "T"];
@@ -81,7 +83,6 @@ function pullRandomTetromino(){
   currentTetrominoShapeArray.splice(randomIndex, 1);
   return randomValue;
 }
-
 
 //Render methods
 function loadElement(elementClasses){
@@ -132,6 +133,7 @@ function initButtons(){
     resetRender();
     renderTitleScreen();
     resetGame();
+    window.clearInterval(100);
   });
   testButton.addEventListener("click", (event) => {
     startGame();
@@ -202,7 +204,7 @@ function startGame(){
         }
       }
       //Create new piece as needed
-      currentTetromino = new Tetromino("x4y1", pullRandomTetromino());
+      currentTetromino = new Tetromino("x4y1", getRandomShape());
       currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
       colourCells(currentTetromino.coordsArray, currentTetromino.colour);
       intervalCount = 0; //reset timer
@@ -449,6 +451,7 @@ function generateShape(coords, shape, rotation){
   return cellArray;
 }
 
+//Colour array of cells with param
 function colourCells(coordsArray, colour){
   for (const coords of coordsArray){
     const cell = document.querySelector("#" + coords);
@@ -546,7 +549,7 @@ function moveTetromino(direction){
   }
 }
 
-//function to check if line is formed and to clear it
+//Check if line is formed and to clear it
 //Cycle through each row to check if all are coloured
 function clearLine(){
   const completedRows = []; //store indices of completed lines
@@ -565,11 +568,10 @@ function clearLine(){
       completedRows.push(xAxisArray);
     }
   }
-  //remove entire row of cells
-  //generate the missing rows of cells again
-  //reassign id again
   const completedLines = completedRows.length;
+  //Check for completed lines
   if (completedLines > 0){
+    //remove entire row of cells, to be replaced with new rows of cells
     for (const xAxisArray of completedRows){
       for (const xAxis of xAxisArray){
         playArea.removeChild(xAxis);
@@ -587,7 +589,7 @@ function clearLine(){
         playArea.prepend(cell);
       }
     }
-    //Cycle through playarea and reassign id again
+    //Cycle through playarea and reassign id again since there is a shift in rows
     let yIndex = 0;
     let xIndex = 0;
     const allCells = playArea.children;
@@ -599,10 +601,18 @@ function clearLine(){
       cell.setAttribute("id", "x"+ xIndex +"y" + yIndex);
       xIndex += 1;
     }
+    //Count and add to highscores
+    let scoreMultiplier = 1;
+    let incomingScore = 0;
+    for (let i = 0; i < completedLines; i++){
+      incomingScore += (100 * scoreMultiplier);
+      scoreMultiplier += 1;
+    }
+    currentScore += incomingScore;
+    scoreLabel.innerHTML = currentScore;
   }   
 }
 
-//Fire all logic
 function main(){
   initButtons();
   initKeyboardEvents();

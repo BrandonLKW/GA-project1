@@ -51,8 +51,8 @@ body {
 
 #playArea{
   background-color: hotpink;
-  height: 800px;
-  width: 400px;
+  height: 600px;
+  width: 300px;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(20, 1fr);
