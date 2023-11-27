@@ -18,8 +18,12 @@ let currentTetromino = null;
 let currentTetrominoShapeArray = [];
 let currentMovementInput = "";
 let currentScore = 0;
-const gameSpeed = 1000; //set by difficulty
-
+let rafId; //stores current id of requestAnimationFrame, to be passed to cancelAnimationFrame
+const gameSpeed = 1500; //set by difficulty
+let startTimeStamp; //start of game loop, use this as the timer
+let previousTimeStamp; //end of last iteration of the game loop
+let totalElapsedTime; //stores total time to be evaluated against speed set by game difficulty
+let isGameOver = false;
 //Images
 const whiteColour = "\\images\\white-box.png";
 const redColour = "\\images\\red-box.png";
@@ -165,8 +169,7 @@ function initKeyboardEvents(){
   });
 }
 
-//build play area
-//width = 10 cells, height = 20 cells (x1y1, x2y1)
+//build play area, width = 10 cells, height = 20 cells (x1y1, x2y1)
 //2 cells hidden buffer above play area, to generate and drop tetromino
 function createPlayArea(){ 
   //new array
@@ -184,60 +187,70 @@ function createPlayArea(){
   }
 }
 
-//function to create tetrominos in the middle of the first line of play area (x4y0, x5y0)
-//https://stackoverflow.com/questions/37949099/how-to-combine-a-do-while-loop-and-setinterval-timer-function
+//Function to start game loop
 function startGame(){
-  let gameOver = false;
-  let intervalCount = 0; //for syncing with determined game speed
-  intervalId = setInterval(() => {
-    if (gameOver){
-      clearInterval(intervalId);
-    }
-    if (currentTetromino === null || currentTetromino.hasEnded){
-      clearLine(); //once piece has landed, check if any lines are solved
-      //Check 2nd topmost row for any obstructions before creation, otherwise game over
-      for (let x = 0; x < 10; x++){
-        const topCell = document.querySelector("#x" + x + "y1");
-        if (topCell.getAttribute("src") !== whiteColour){
-          gameOver = true;
-          return;
-        }
-      }
-      //Create new piece as needed
-      currentTetromino = new Tetromino("x4y1", getRandomShape());
-      currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
-      colourCells(currentTetromino.coordsArray, currentTetromino.colour);
-      intervalCount = 0; //reset timer
-    }
-    if (currentTetromino.isLocked){
-      //If hard drop, no interation allowed
-      moveTetromino("FALL");
-      intervalCount = 0;
-    } else{
-      //Otherwise proceed game logic as usual
-      if (intervalCount >= gameSpeed){
-        //Default falling logic, based on game speed and used to determine if new piece is needed
-        let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
-        if (yCoordBefore <= 20){ //y21 is lowest point in play area
-          moveTetromino("FALL");
-        } 
-        intervalCount = 0;
-      } else{
-        //Allow movement on the other ticks that the default falling logic is not on
-        if (currentMovementInput !== ""){
-          moveTetromino(currentMovementInput);
-        }
-      }
-    }
-    intervalCount += 100;
-    currentMovementInput = "";
-    console.log(intervalCount);
-  }, 100); //use 0.1sec tick to detect user input for now
-  //resetGame();
+  //https://spicyyoghurt.com/tutorials/html5-javascript-game-development/create-a-proper-game-loop-with-requestanimationframe
+  startTimeStamp = Date.now();
+  previousTimeStamp = startTimeStamp;
+  totalElapsedTime = 0;
+  rafId = window.requestAnimationFrame(gameLoop); 
 }
 
 function resetGame(){
   playArea.innerHTML = "";
+}
+
+function gameLoop(){
+  let currentTimeStamp = Date.now();
+  totalElapsedTime += (currentTimeStamp - previousTimeStamp);
+  if (currentTetromino === null || currentTetromino.hasEnded){
+    clearLine(); //once piece has landed, check if any lines are solved
+    checkGameOver();
+    if (isGameOver){
+      window.cancelAnimationFrame(rafId);
+      return;
+    }
+    createTetromino();
+    totalElapsedTime = 0;
+  }
+  if (currentTetromino.isLocked){
+    moveTetromino("FALL");
+    totalElapsedTime = 0;
+  } else {
+    if (totalElapsedTime >= gameSpeed) {
+      //Default falling logic, based on game speed and used to determine if new piece is needed
+      let yCoordBefore = parseInt(currentTetromino.coords.substring(3));
+      if (yCoordBefore <= 20){ //y21 is lowest point in play area
+        moveTetromino("FALL");
+      } 
+      totalElapsedTime = 0;
+    } else {
+      if (currentMovementInput !== ""){
+        //Allow movement on the other ticks that the default falling logic is not on
+        moveTetromino(currentMovementInput);
+        currentMovementInput = "";
+      }
+    }
+  }
+  previousTimeStamp = currentTimeStamp;
+  rafId = window.requestAnimationFrame(gameLoop);
+}
+
+function checkGameOver(){
+  //Check 2nd topmost row for any obstructions before creation, otherwise game over
+  for (let x = 0; x < 10; x++){
+    const topCell = document.querySelector("#x" + x + "y1");
+    if (topCell.getAttribute("src") !== whiteColour){
+      isGameOver = true;
+      return;
+    }
+  }
+}
+
+function createTetromino(){
+  currentTetromino = new Tetromino("x4y1", getRandomShape());
+  currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
+  colourCells(currentTetromino.coordsArray, currentTetromino.colour);
 }
 
 //Create array of x-y coords based on main coords and shape
@@ -459,6 +472,7 @@ function colourCells(coordsArray, colour){
   }
 }
 
+//General function to manipulate tetermino movement, rotations
 function moveTetromino(direction){
   //Determine x-y coords based on direction
   const mainCell = document.querySelector("#" + currentTetromino.coords);
@@ -513,6 +527,9 @@ function moveTetromino(direction){
   let isFilled = false;
   for (const newCoords of newCoordsArray){
     const newCell = document.querySelector("#" + newCoords);
+    if (newCell === null){
+      return; //stop any action that involves unknown cells (out of play area);
+    }
     if (newCell.getAttribute("src") !== whiteColour){
       isFilled = true;
     }
@@ -549,8 +566,7 @@ function moveTetromino(direction){
   }
 }
 
-//Check if line is formed and to clear it
-//Cycle through each row to check if all are coloured
+//Check if line is formed and to clear it, cycle through each row to check if all are coloured
 function clearLine(){
   const completedRows = []; //store indices of completed lines
   for (let y = 0; y < 22; y++){
