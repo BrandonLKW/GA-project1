@@ -1,7 +1,7 @@
 // *** Global Variables ***
 //Title screen
 const titleScreen = document.querySelector("#titleSection");
-const startGameButton = document.querySelector("#startGameBtn");
+const playButton = document.querySelector("#playBtn");
 const hiscoresButton = document.querySelector("#hiscoresBtn");
 const settingsButton = document.querySelector("#settingsBtn");
 //Game screen
@@ -10,20 +10,21 @@ const gameScreenCenter = document.querySelector("#mainCenterSection");
 const gameScreenRight = document.querySelector("#mainRightSection");
 const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
-const testButton = document.querySelector("#testShapeBtn");
+const startButton = document.querySelector("#startGameBtn");
 const scoreLabel = document.querySelector("#scoreLabel");
-const clearLnButton = document.querySelector("#clearLnBtn");
+const resetGameButton = document.querySelector("#resetGameBtn");
 //Game runtime variables
-let currentTetromino = null;
-let currentTetrominoShapeArray = [];
-let currentMovementInput = "";
-let currentScore = 0;
+let currentTetromino;
+let currentTetrominoShapeArray;
+let currentMovementInput;
+let currentScore;
 let rafId; //stores current id of requestAnimationFrame, to be passed to cancelAnimationFrame
-const gameSpeed = 1500; //set by difficulty
+const gameSpeed = 1000; //set by difficulty
 let startTimeStamp; //start of game loop, use this as the timer
 let previousTimeStamp; //end of last iteration of the game loop
 let totalElapsedTime; //stores total time to be evaluated against speed set by game difficulty
-let isGameOver = false;
+let isGameOver;
+let isResetGame;
 //Images
 const whiteColour = "\\images\\white-box.png";
 const redColour = "\\images\\red-box.png";
@@ -101,7 +102,7 @@ function hideElement(elementClasses){
 
 function resetRender(){
   hideElement(titleScreen.classList);
-  hideElement(startGameButton.classList);
+  hideElement(playButton.classList);
   hideElement(hiscoresButton.classList);
   hideElement(settingsButton.classList);
   hideElement(gameScreenLeft.classList);
@@ -112,7 +113,7 @@ function resetRender(){
 function renderTitleScreen(){
   resetRender();
   loadElement(titleScreen.classList);
-  loadElement(startGameButton.classList);
+  loadElement(playButton.classList);
   loadElement(hiscoresButton.classList);
   loadElement(settingsButton.classList);
 }
@@ -122,12 +123,12 @@ function renderGameScreen(){
   loadElement(gameScreenLeft.classList);
   loadElement(gameScreenCenter.classList);
   loadElement(gameScreenRight.classList);
-  createPlayArea();
+  resetGame();
 }
 
 //Button events
 function initButtons(){
-  startGameButton.addEventListener("click", (event) => {
+  playButton.addEventListener("click", (event) => {
     event.preventDefault();
     resetRender();
     renderGameScreen();
@@ -137,13 +138,15 @@ function initButtons(){
     resetRender();
     renderTitleScreen();
     resetGame();
-    window.clearInterval(100);
   });
-  testButton.addEventListener("click", (event) => {
+  startButton.addEventListener("click", (event) => {
+    event.preventDefault();
     startGame();
   });
-  clearLnButton.addEventListener("click", (event) => {
-    clearLine();
+  resetGameButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    isResetGame = true; //flag, to be fired in game loop
+    console.log("flag reset", isResetGame);
   })
 }
 
@@ -169,24 +172,6 @@ function initKeyboardEvents(){
   });
 }
 
-//build play area, width = 10 cells, height = 20 cells (x1y1, x2y1)
-//2 cells hidden buffer above play area, to generate and drop tetromino
-function createPlayArea(){ 
-  //new array
-  for (let y = 0; y < 22; y++){
-    for (let x = 0; x < 10; x++){
-      //Create html element
-      const cell = document.createElement("img");
-      cell.setAttribute("src", whiteColour);
-      cell.setAttribute("width", "100%");
-      cell.setAttribute("height", "100%");
-      cell.setAttribute("border", "1px solid");
-      cell.setAttribute("id", "x"+ x +"y" + y);
-      playArea.append(cell);
-    }
-  }
-}
-
 //Function to start game loop
 function startGame(){
   //https://spicyyoghurt.com/tutorials/html5-javascript-game-development/create-a-proper-game-loop-with-requestanimationframe
@@ -196,18 +181,53 @@ function startGame(){
   rafId = window.requestAnimationFrame(gameLoop); 
 }
 
+//Function to reset and init game variables
 function resetGame(){
+  currentTetromino = null;
+  currentTetrominoShapeArray = [];
+  currentScore = 0;
+  currentMovementInput = "";
+  startTimeStamp = 0; 
+  previousTimeStamp = 0; 
+  totalElapsedTime = 0;
+  isGameOver = false;
+  isResetGame = false;
+  //Create play area by creating an img element per grid square
+  //Width = 10 cells, height = 20 cells (x1y1, x2y1), 2 cells hidden buffer above play area to generate and drop tetromino
   playArea.innerHTML = "";
+  for (let y = 0; y < 22; y++){
+    for (let x = 0; x < 10; x++){
+      const cell = document.createElement("img");
+      cell.setAttribute("src", whiteColour);
+      cell.setAttribute("width", "100%");
+      cell.setAttribute("height", "100%");
+      cell.setAttribute("border", "1px solid");
+      cell.setAttribute("id", "x"+ x +"y" + y);
+      if (y <= 1){
+        cell.classList.add("hide");
+      }
+      playArea.append(cell);
+    }
+  }
 }
 
 function gameLoop(){
   let currentTimeStamp = Date.now();
   totalElapsedTime += (currentTimeStamp - previousTimeStamp);
+  if (isResetGame){ //reset can be called at any point
+    setTimeout(() => {
+      window.cancelAnimationFrame(rafId);
+    }, 250);
+    resetGame();
+    return;
+  }
   if (currentTetromino === null || currentTetromino.hasEnded){
     clearLine(); //once piece has landed, check if any lines are solved
-    checkGameOver();
+    checkGameOver(); //check game over after latest piece has landed
     if (isGameOver){
-      window.cancelAnimationFrame(rafId);
+      setTimeout(() => {
+        window.cancelAnimationFrame(rafId);
+      }, 250);
       return;
     }
     createTetromino();
@@ -615,6 +635,12 @@ function clearLine(){
         yIndex += 1;
       }
       cell.setAttribute("id", "x"+ xIndex +"y" + yIndex);
+      if (yIndex <= 1){
+        cell.classList.add("hide");
+      } else{
+        cell.classList.remove("hide");
+        cell.classList.add("show");
+      }
       xIndex += 1;
     }
     //Count and add to highscores

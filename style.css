@@ -13,7 +13,7 @@ body {
   grid-row: 1;
 }
 
-#startGameBtn{
+#playBtn{
   grid-column: 2;
   grid-row: 2;
 }
@@ -50,7 +50,6 @@ body {
 }
 
 #playArea{
-  background-color: hotpink;
   height: 600px;
   width: 300px;
   display: grid;
