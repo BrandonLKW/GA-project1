@@ -5,9 +5,11 @@ const playButton = document.querySelector("#playBtn");
 const hiscoresButton = document.querySelector("#hiscoresBtn");
 const settingsButton = document.querySelector("#settingsBtn");
 //Game screen
-const gameScreenLeft = document.querySelector("#mainLeftSection");
+const gameScreenNextPieceSection = document.querySelector("#nextPieceSection");
 const gameScreenCenter = document.querySelector("#mainCenterSection");
-const gameScreenRight = document.querySelector("#mainRightSection");
+const gameScreenScoreSection = document.querySelector("#scoreSection");
+const gameScreenInstSection = document.querySelector("#instructionsSection");
+const gameScreenOptionsSection = document.querySelector("#optionsSection");
 const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
 const startButton = document.querySelector("#startGameBtn");
@@ -105,9 +107,11 @@ function resetRender(){
   hideElement(playButton.classList);
   hideElement(hiscoresButton.classList);
   hideElement(settingsButton.classList);
-  hideElement(gameScreenLeft.classList);
+  hideElement(gameScreenNextPieceSection.classList);
   hideElement(gameScreenCenter.classList);
-  hideElement(gameScreenRight.classList);
+  hideElement(gameScreenScoreSection.classList);
+  hideElement(gameScreenInstSection.classList);
+  hideElement(gameScreenOptionsSection.classList);
 }
 
 function renderTitleScreen(){
@@ -120,9 +124,11 @@ function renderTitleScreen(){
 
 function renderGameScreen(){
   resetRender();
-  loadElement(gameScreenLeft.classList);
+  loadElement(gameScreenNextPieceSection.classList);
   loadElement(gameScreenCenter.classList);
-  loadElement(gameScreenRight.classList);
+  loadElement(gameScreenScoreSection.classList);
+  loadElement(gameScreenInstSection.classList);
+  loadElement(gameScreenOptionsSection.classList);
   resetGame();
 }
 
@@ -186,6 +192,7 @@ function resetGame(){
   currentTetromino = null;
   currentTetrominoShapeArray = [];
   currentScore = 0;
+  scoreLabel.innerHTML = currentScore;
   currentMovementInput = "";
   startTimeStamp = 0; 
   previousTimeStamp = 0; 
@@ -203,7 +210,7 @@ function resetGame(){
       cell.setAttribute("height", "100%");
       cell.setAttribute("border", "1px solid");
       cell.setAttribute("id", "x"+ x +"y" + y);
-      if (y <= 1){
+      if (y < 1){
         cell.classList.add("hide");
       }
       playArea.append(cell);
@@ -635,7 +642,7 @@ function clearLine(){
         yIndex += 1;
       }
       cell.setAttribute("id", "x"+ xIndex +"y" + yIndex);
-      if (yIndex <= 1){
+      if (yIndex < 1){
         cell.classList.add("hide");
       } else{
         cell.classList.remove("hide");

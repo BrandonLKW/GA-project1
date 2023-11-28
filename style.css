@@ -1,41 +1,90 @@
 body {
   height: 80vh;
+  min-height: 600px;
+  width: 50vw;
   margin-top: 5%;
-  margin-right: 5%;
-  margin-left: 5%;
+  margin-right: 25vw;
+  margin-left: 25vw;
+  margin-top: 2.5%;
   display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
+  border: 1px;
+  background-color: #0D1282;
+  border-color: #EEEDED;
+  border-style: groove;
+  grid-template-columns: 1fr 300px 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 }
 
 #titleSection{
   grid-column: 2;
   grid-row: 1;
+  padding-top: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #playBtn{
-  grid-column: 2;
+  grid-column: 1/4;
   grid-row: 2;
 }
 
 #hiscoresBtn{
-  grid-column: 2;
+  grid-column: 1/4;
   grid-row: 3;
 }
 
 #settingsBtn{
-  grid-column: 2;
+  grid-column: 1/4;
   grid-row: 4;
 }
 
-#mainLeftSection{
-  background-color: pink;
+.menuButton{
+  margin-top: 5%;
+  margin-right: 30%;
+  margin-left: 30%;
+  background-color: #EEEDED;
+  font-size: x-large;
+}
+
+#nextPieceSection{
   grid-column: 1;
-  grid-row: 1/6;
+  grid-row: 1/3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+#nextPieceHeader{
+  width: 90%;
+  height: 15%;
+  margin-top: 10%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  border-style: groove;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: large;
+}
+
+#nextPieceText{
+  width: 80%;
+  height: 75%;
+  margin-top: 5%;
+  padding-left: 3%;
+  padding-right: 3%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  border-style: groove;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: medium;
 }
 
 #mainCenterSection{
-  background-color: darkcyan;
   grid-column: 2;
   grid-row: 1/6;
   display: flex;
@@ -43,10 +92,66 @@ body {
   justify-content: center;
 }
 
-#mainRightSection{
-  background-color: darkred;
+#scoreSection{
   grid-column: 3;
-  grid-row: 1/6;
+  grid-row: 1;
+  margin-top: 10%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+#instructionsSection{
+  grid-column: 3;
+  grid-row: 2/5;
+  margin-top: 5%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+#instructionsHeader{
+  width: 90%;
+  height: 15%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  border-style: groove;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: medium;
+}
+
+#instructionsText{
+  width: 80%;
+  height: 75%;
+  padding-top: 5%;
+  padding-left: 3%;
+  padding-right: 3%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  border-style: groove;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: medium;
+}
+
+#optionsSection{
+  grid-column: 3;
+  grid-row: 5;
+  margin-top: 10%;
+  margin-bottom: 5%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}   
+
+.optionsButton{
+  width: 25%;
+  background-color: #EEEDED;
+  font-size: large;
 }
 
 #playArea{
@@ -55,6 +160,31 @@ body {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(20, 1fr);
+}
+
+.label{
+  width: 90%;
+  height: 40%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  border-style: groove;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: large;
+}
+
+.subLabel{
+  width: 60%;
+  height: 40%;
+  border: 1px;
+  background-color: #EEEDED;
+  border-color: #D71313;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: large;
 }
 
 .hide {

@@ -9,28 +9,40 @@
   </head>
   <body>
     <section id="titleSection" class="hide">
-      <div>
-        <h1>Tetris Header here</h1>
-        <h2>GA image here</h2>
-      </div>
+      <img src="/images/logo.png" alt="Main Logo">
     </section>
-    <button id="playBtn" class="hide">Start</button>
-    <button id="hiscoresBtn" class="hide">High Scores</button>
-    <button id="settingsBtn" class="hide">Settings</button>
+    <button id="playBtn" class="menuButton hide">Start</button>
+    <button id="hiscoresBtn" class="menuButton hide">High Scores</button>
+    <button id="settingsBtn" class="menuButton hide">Settings</button>
   
-    <section id="mainLeftSection" class="hide">
-      <h1>Next and Holding features here</h1>
+    <section id="nextPieceSection" class="hide">
+      <div id="nextPieceHeader">Next</div>
+      <div id="nextPieceText"></div>
     </section>
+
     <section id="mainCenterSection" class="hide">
       <div id="playArea"></div>
     </section>
-    <section id="mainRightSection" class="hide">
-      <h1>Score:</h1>
-      <h2 id="scoreLabel"></h2>
-      <h1>Game options here</h1>
-      <button id="startGameBtn">Start</button>
-      <button id="resetGameBtn">Reset</button>
-      <button id="exitGameBtn">Return to title</button>
+
+    <section id="scoreSection" class="hide">
+      <div class="label">Current Score</div>
+      <div id="scoreLabel" class="subLabel">0</div>
+    </section>
+    <section id="instructionsSection" class="hide">
+      <div id="instructionsHeader">Instructions</div>
+      <div id="instructionsText">
+        <div>'&#60;-' Key to move Left</div>
+        <div>'->' Key to move Right</div>
+        <div>'R' Key to Rotate the piece</div>
+        <div>'Spacebar' Key to perform a hard drop</div>
+        <div>Complete multiple rows at a time for bonus points</div>
+        <div>Have fun!</div>
+      </div>
+    </section>
+    <section id="optionsSection" class="hide">
+      <button id="startGameBtn" class="optionsButton">Start</button>
+      <button id="resetGameBtn" class="optionsButton">Reset</button>
+      <button id="exitGameBtn" class="optionsButton">Exit</button>
     </section>
     <script src="main.js"></script>
   </body>
