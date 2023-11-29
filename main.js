@@ -600,11 +600,28 @@ function moveTetromino(direction){
   const nextCoordsArray = generateShape(nextCoords, currentTetromino.shape, currentTetromino.shapeRotation); 
   //Exclude common cells (comparing prev and next), then check if these new cells are already filled
   const newCoordsArray = nextCoordsArray.filter((nextCoords) => !currentTetromino.coordsArray.includes(nextCoords));
-  const unusedCoordsArray = currentTetromino.coordsArray.filter((nextCoords) => !nextCoordsArray.includes(nextCoords));
+  const unusedCoordsArray = currentTetromino.coordsArray.filter((currentCoords) => !nextCoordsArray.includes(currentCoords));
   let isFilled = false;
   for (const newCoords of newCoordsArray){
     const newCell = document.querySelector("#" + newCoords);
     if (newCell === null){
+      if (direction === "ROTATE"){//reset to previous rotation position
+        if (currentTetromino.shapeRotation > 0){
+          currentTetromino.shapeRotation -= 1;
+        } else{
+          switch (currentTetromino.shape){
+            case "I":
+              currentTetromino.shapeRotation = 1;
+              break;
+            case "O":
+              currentTetromino.shapeRotation = 0;
+              break;
+            default:
+              currentTetromino.shapeRotation = 3;
+              break;  
+          }
+        }
+      }
       return; //stop any action that involves unknown cells (out of play area);
     }
     if (newCell.getAttribute("src") !== whiteColour){
