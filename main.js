@@ -11,19 +11,17 @@ const gameScreenScoreSection = document.querySelector("#scoreSection");
 const gameScreenInstSection = document.querySelector("#instructionsSection");
 const gameScreenOptionsSection = document.querySelector("#optionsSection");
 const nextPieceArea = document.querySelector("#nextPieceArea");
-const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
-const startButton = document.querySelector("#startGameBtn");
 const scoreLabel = document.querySelector("#scoreLabel");
-const resetGameButton = document.querySelector("#resetGameBtn");
+//Overlay
+const gameDiffScreen = document.querySelector("#gameDifficulty");
 //Game runtime variables
 let currentTetromino;
 let nextTetromino;
 let currentTetrominoShapeArray;
 let currentMovementInput;
 let currentScore;
-let rafId; //stores current id of requestAnimationFrame, to be passed to cancelAnimationFrame
-const gameSpeed = 1000; //set by difficulty
+let gameSpeed; //set by difficulty
 let startTimeStamp; //start of game loop, use this as the timer
 let previousTimeStamp; //end of last iteration of the game loop
 let totalElapsedTime; //stores total time to be evaluated against speed set by game difficulty
@@ -114,6 +112,7 @@ function resetRender(){
   hideElement(gameScreenScoreSection.classList);
   hideElement(gameScreenInstSection.classList);
   hideElement(gameScreenOptionsSection.classList);
+  hideElement(gameDiffScreen.classList);
 }
 
 function renderTitleScreen(){
@@ -137,24 +136,48 @@ function renderGameScreen(){
 //Button events
 function initButtons(){
   playButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    resetRender();
-    renderGameScreen();
+    event.preventDefault();    
+    loadElement(gameDiffScreen.classList);
   });
+  const endGameButton = document.querySelector("#exitGameBtn");
   endGameButton.addEventListener("click", (event) => {
     event.preventDefault();
     resetRender();
     renderTitleScreen();
     resetGame();
   });
+  const startButton = document.querySelector("#startGameBtn");
   startButton.addEventListener("click", (event) => {
     event.preventDefault();
     startGame();
   });
+  const resetGameButton = document.querySelector("#resetGameBtn");
   resetGameButton.addEventListener("click", (event) => {
     event.preventDefault();
     isResetGame = true; //flag, to be fired in game loop
   })
+  let difficultyButtons = [];
+  difficultyButtons.push(document.querySelector("#easyDiffBtn"));
+  difficultyButtons.push(document.querySelector("#normalDiffBtn"));
+  difficultyButtons.push(document.querySelector("#hardDiffBtn"));
+  difficultyButtons.forEach(button => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      switch(button.innerHTML.toUpperCase()){
+        case "EASY":
+          gameSpeed = 1500;
+          break;
+        case "HARD":
+          gameSpeed = 500;
+          break;
+        default:
+          gameSpeed = 1000;
+          break;
+      }
+      resetRender();
+      renderGameScreen();
+    });
+  });
 }
 
 //Keyboard events
@@ -185,7 +208,8 @@ function startGame(){
   startTimeStamp = Date.now();
   previousTimeStamp = startTimeStamp;
   totalElapsedTime = 0;
-  rafId = window.requestAnimationFrame(gameLoop); 
+  currentMovementInput = "";
+  window.requestAnimationFrame(gameLoop); 
 }
 
 //Function to reset and init game variables
@@ -219,6 +243,7 @@ function resetGame(){
       playArea.append(cell);
     }
   }
+  clearAllAnimationFrames();
 }
 
 function gameLoop(){
@@ -226,8 +251,8 @@ function gameLoop(){
   totalElapsedTime += (currentTimeStamp - previousTimeStamp);
   if (isResetGame){ //reset can be called at any point
     setTimeout(() => {
-      window.cancelAnimationFrame(rafId);
-    }, 300);
+      clearAllAnimationFrames();
+    }, 200);
     resetGame();
     return;
   }
@@ -236,8 +261,8 @@ function gameLoop(){
     checkGameOver(); //check game over after latest piece has landed
     if (isGameOver){
       setTimeout(() => {
-        window.cancelAnimationFrame(rafId);
-      }, 300);
+        clearAllAnimationFrames();
+      }, 200);
       return;
     }
     if (nextTetromino === null){ //init loop
@@ -269,7 +294,7 @@ function gameLoop(){
     }
   }
   previousTimeStamp = currentTimeStamp;
-  rafId = window.requestAnimationFrame(gameLoop);
+  window.requestAnimationFrame(gameLoop);
 }
 
 function checkGameOver(){
@@ -690,6 +715,14 @@ function drawNextTetromino(){
   const array = generateShape("x2y1", nextTetromino.shape, nextTetromino.rotation);
   const nextPieceAreaArray = array.map((coord) => "np" + coord);
   colourCells(nextPieceAreaArray, nextTetromino.colour);
+}
+
+function clearAllAnimationFrames(){
+  //https://stackoverflow.com/questions/52285581/cancel-all-currently-running-requestanimationframes
+  let rafId = window.requestAnimationFrame(() => {}); //call empty function to get latest id
+  while(rafId--){
+    window.cancelAnimationFrame(rafId);
+  }
 }
 
 function main(){

@@ -16,6 +16,38 @@ body {
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 }
 
+#gameDifficulty {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 1;
+}
+
+#gameDifficultySection{
+  width: 50%;
+  height: 50%;
+  margin-top: 5%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.gameDifficultyButton{
+  width: 60%;
+  margin-top: 5%;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #EEEDED;
+  font-size: x-large;
+}
+
 #titleSection{
   grid-column: 2;
   grid-row: 1;
