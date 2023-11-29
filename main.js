@@ -13,8 +13,10 @@ const gameScreenOptionsSection = document.querySelector("#optionsSection");
 const nextPieceArea = document.querySelector("#nextPieceArea");
 const playArea = document.querySelector("#playArea");
 const scoreLabel = document.querySelector("#scoreLabel");
+const nameSubmitButton = document.querySelector("#nameSubmitBtn");
 //Overlay
 const gameDiffScreen = document.querySelector("#gameDifficulty");
+const gameOverScreen = document.querySelector("#gameOver");
 //Game runtime variables
 let currentTetromino;
 let nextTetromino;
@@ -113,6 +115,7 @@ function resetRender(){
   hideElement(gameScreenInstSection.classList);
   hideElement(gameScreenOptionsSection.classList);
   hideElement(gameDiffScreen.classList);
+  hideElement(gameOverScreen.classList);
 }
 
 function renderTitleScreen(){
@@ -174,9 +177,21 @@ function initButtons(){
           gameSpeed = 1000;
           break;
       }
-      resetRender();
-      renderGameScreen();
+      setTimeout(() => { //to delay abit while web elements are generating
+        resetRender();
+        renderGameScreen();
+      }, 500);
     });
+  });
+  nameSubmitButton.addEventListener("click", (event) => {
+    const name = document.querySelector("nameInput");
+    localStorage.setItem("gahiscore3", name);
+  });
+  const closeGameOverButton = document.querySelector("#closeGameOverBtn");
+  closeGameOverButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    hideElement(gameOverScreen.classList);
+    resetGame();
   });
 }
 
@@ -263,6 +278,7 @@ function gameLoop(){
       setTimeout(() => {
         clearAllAnimationFrames();
       }, 200);
+      loadElement(gameOverScreen.classList);
       return;
     }
     if (nextTetromino === null){ //init loop

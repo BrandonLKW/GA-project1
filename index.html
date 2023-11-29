@@ -44,12 +44,30 @@
       <button id="resetGameBtn" class="optionsButton">Reset</button>
       <button id="exitGameBtn" class="optionsButton">Exit</button>
     </section>
-    <div id="gameDifficulty">
+    <div id="gameDifficulty" class="modal hide">
       <section id="gameDifficultySection">
         <button id="easyDiffBtn" class="gameDifficultyButton">Easy</button>
         <button id="normalDiffBtn" class="gameDifficultyButton">Normal</button>
         <button id="hardDiffBtn" class="gameDifficultyButton">Hard</button>
       </section>
+    </div>
+    <div id="gameOver" class="modal hide">
+      <section id="gameOverHeader">
+        <img src="/images/gameover.png" alt="Game Over Logo">
+        <div class="gameOverHeaderLabel">Final Score</div>
+        <div id="scoreFinalLabel" class="gameOverHeaderLabel">0</div>
+      </section>
+      <section id="gameOverInput">
+        <form>
+          <div class="formText">You have achieved a new high score!</div>
+          <div id="formItems">
+            <label class="formText">Enter your name:</label>
+            <input id="nameInput" type="text" maxlength="20" size="10"> 
+            <button id="nameSubmitBtn" type="button">Submit</button>
+          </div>
+        </form>
+      </section>
+      <button id="closeGameOverBtn">Close</button>
     </div>
     <script src="main.js"></script>
   </body>

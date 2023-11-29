@@ -16,7 +16,7 @@ body {
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 }
 
-#gameDifficulty {
+.modal {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -46,6 +46,67 @@ body {
   margin-right: auto;
   background-color: #EEEDED;
   font-size: x-large;
+}
+
+#gameOverHeader{
+  width: 40%;
+  margin-top: 10%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  background-color: black;
+}
+
+.gameOverHeaderLabel{
+  width: 60%;
+  height: 100%;
+  margin-top: 5%;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: x-large;
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: xx-large;
+}
+
+#gameOverInput{
+  width: 40%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+}
+
+#closeGameOverBtn{
+  width: 40%;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #EEEDED;
+  font-size: x-large;
+  display: flex;
+  justify-content: center;
+}
+
+#formItems{
+  margin-top: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formText{
+  font-size: x-large;
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: xx-large;
 }
 
 #titleSection{
