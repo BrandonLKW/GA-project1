@@ -10,6 +10,7 @@ const gameScreenCenter = document.querySelector("#mainCenterSection");
 const gameScreenScoreSection = document.querySelector("#scoreSection");
 const gameScreenInstSection = document.querySelector("#instructionsSection");
 const gameScreenOptionsSection = document.querySelector("#optionsSection");
+const nextPieceArea = document.querySelector("#nextPieceArea");
 const endGameButton = document.querySelector("#exitGameBtn");
 const playArea = document.querySelector("#playArea");
 const startButton = document.querySelector("#startGameBtn");
@@ -17,6 +18,7 @@ const scoreLabel = document.querySelector("#scoreLabel");
 const resetGameButton = document.querySelector("#resetGameBtn");
 //Game runtime variables
 let currentTetromino;
+let nextTetromino;
 let currentTetrominoShapeArray;
 let currentMovementInput;
 let currentScore;
@@ -152,7 +154,6 @@ function initButtons(){
   resetGameButton.addEventListener("click", (event) => {
     event.preventDefault();
     isResetGame = true; //flag, to be fired in game loop
-    console.log("flag reset", isResetGame);
   })
 }
 
@@ -190,6 +191,7 @@ function startGame(){
 //Function to reset and init game variables
 function resetGame(){
   currentTetromino = null;
+  nextTetromino = null;
   currentTetrominoShapeArray = [];
   currentScore = 0;
   scoreLabel.innerHTML = currentScore;
@@ -201,7 +203,8 @@ function resetGame(){
   isResetGame = false;
   //Create play area by creating an img element per grid square
   //Width = 10 cells, height = 20 cells (x1y1, x2y1), 2 cells hidden buffer above play area to generate and drop tetromino
-  playArea.innerHTML = "";
+  playArea.replaceChildren(); //Chrome/Edge 86+, Firefox 78+, and Safari 14+, otherwise use innerHTML = "";
+  nextPieceArea.replaceChildren();
   for (let y = 0; y < 22; y++){
     for (let x = 0; x < 10; x++){
       const cell = document.createElement("img");
@@ -224,7 +227,7 @@ function gameLoop(){
   if (isResetGame){ //reset can be called at any point
     setTimeout(() => {
       window.cancelAnimationFrame(rafId);
-    }, 250);
+    }, 300);
     resetGame();
     return;
   }
@@ -234,10 +237,16 @@ function gameLoop(){
     if (isGameOver){
       setTimeout(() => {
         window.cancelAnimationFrame(rafId);
-      }, 250);
+      }, 300);
       return;
     }
-    createTetromino();
+    if (nextTetromino === null){ //init loop
+      nextTetromino = createTetromino();
+    }
+    currentTetromino = nextTetromino;
+    colourCells(currentTetromino.coordsArray, currentTetromino.colour);
+    nextTetromino = createTetromino();
+    drawNextTetromino();
     totalElapsedTime = 0;
   }
   if (currentTetromino.isLocked){
@@ -275,9 +284,9 @@ function checkGameOver(){
 }
 
 function createTetromino(){
-  currentTetromino = new Tetromino("x4y1", getRandomShape());
-  currentTetromino.coordsArray = generateShape(currentTetromino.coords, currentTetromino.shape, currentTetromino.shapeRotation); 
-  colourCells(currentTetromino.coordsArray, currentTetromino.colour);
+  const newTetromino = new Tetromino("x4y1", getRandomShape());
+  newTetromino.coordsArray = generateShape(newTetromino.coords, newTetromino.shape, newTetromino.shapeRotation); 
+  return newTetromino;
 }
 
 //Create array of x-y coords based on main coords and shape
@@ -660,6 +669,27 @@ function clearLine(){
     currentScore += incomingScore;
     scoreLabel.innerHTML = currentScore;
   }   
+}
+
+//Function to separately draw the next piece in its own area
+function drawNextTetromino(){
+  nextPieceArea.replaceChildren();
+  for (let y = 0; y < 2; y++){
+    for (let x = 0; x < 5; x++){
+      const cell = document.createElement("img");
+      cell.setAttribute("src", whiteColour);
+      cell.setAttribute("width", "100%");
+      cell.setAttribute("height", "100%");
+      cell.setAttribute("grid-column", x + 1);
+      cell.setAttribute("grid-row", y + 1);
+      cell.setAttribute("border", "1px solid");
+      cell.setAttribute("id", "npx"+ x +"y" + y);
+      nextPieceArea.append(cell);
+    }
+  }
+  const array = generateShape("x2y1", nextTetromino.shape, nextTetromino.rotation);
+  const nextPieceAreaArray = array.map((coord) => "np" + coord);
+  colourCells(nextPieceAreaArray, nextTetromino.colour);
 }
 
 function main(){
