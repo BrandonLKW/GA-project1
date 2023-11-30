@@ -13,8 +13,10 @@ const gameScreenOptionsSection = document.querySelector("#optionsSection");
 const nextPieceArea = document.querySelector("#nextPieceArea");
 const playArea = document.querySelector("#playArea");
 const scoreLabel = document.querySelector("#scoreLabel");
+const inputHiscoreSection = document.querySelector("#gameOverInput");
 const nameSubmitButton = document.querySelector("#nameSubmitBtn");
 //Overlay
+const gameHighScoreScreen = document.querySelector("#gameHighScore");
 const gameDiffScreen = document.querySelector("#gameDifficulty");
 const gameOverScreen = document.querySelector("#gameOver");
 //Game runtime variables
@@ -23,6 +25,7 @@ let nextTetromino;
 let currentTetrominoShapeArray;
 let currentMovementInput;
 let currentScore;
+let highScoreIndex;
 let gameSpeed; //set by difficulty
 let startTimeStamp; //start of game loop, use this as the timer
 let previousTimeStamp; //end of last iteration of the game loop
@@ -38,6 +41,9 @@ const yellowColour = "\\images\\yellow-box.png";
 const purpleColour = "\\images\\purple-box.png";
 const tealColour = "\\images\\teal-box.png";
 const orangeColour = "\\images\\orange-box.png";
+//Storage
+const highscoreStoreNum = "gahiscore";
+const highscoreStoreStr = "gahiscorename";
 
 class Tetromino{
   constructor(coords, shape){
@@ -142,6 +148,16 @@ function initButtons(){
     event.preventDefault();    
     loadElement(gameDiffScreen.classList);
   });
+  hiscoresButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    loadHighscoreScreen();
+    loadElement(gameHighScoreScreen.classList);
+  });
+  const closeHighScoresButton = document.querySelector("#highScoresBtn");
+  closeHighScoresButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    hideElement(gameHighScoreScreen.classList);
+  });
   const endGameButton = document.querySelector("#exitGameBtn");
   endGameButton.addEventListener("click", (event) => {
     event.preventDefault();
@@ -158,7 +174,7 @@ function initButtons(){
   resetGameButton.addEventListener("click", (event) => {
     event.preventDefault();
     isResetGame = true; //flag, to be fired in game loop
-  })
+  });
   let difficultyButtons = [];
   difficultyButtons.push(document.querySelector("#easyDiffBtn"));
   difficultyButtons.push(document.querySelector("#normalDiffBtn"));
@@ -184,12 +200,29 @@ function initButtons(){
     });
   });
   nameSubmitButton.addEventListener("click", (event) => {
-    const name = document.querySelector("nameInput");
-    localStorage.setItem("gahiscore3", name);
+    event.preventDefault();
+    const name = document.querySelector("#nameInput").value;
+    let previousName = "";
+    let previousScore = "";
+    let incomingName = name;
+    let incomingScore = currentScore;
+    //Move previous hiscores down as needed
+    for (let index = highScoreIndex; index <= 5; index++){
+      previousName = localStorage.getItem(highscoreStoreStr + index);
+      previousScore = localStorage.getItem(highscoreStoreNum + index);
+      localStorage.setItem(highscoreStoreStr + index, incomingName);
+      localStorage.setItem(highscoreStoreNum + index, incomingScore);
+      incomingName = previousName;
+      incomingScore = previousScore;
+    }
+    hideElement(gameOverScreen.classList);
+    hideElement(inputHiscoreSection.classList);
+    resetGame();
   });
   const closeGameOverButton = document.querySelector("#closeGameOverBtn");
   closeGameOverButton.addEventListener("click", (event) => {
     event.preventDefault();
+    hideElement(inputHiscoreSection.classList);
     hideElement(gameOverScreen.classList);
     resetGame();
   });
@@ -215,6 +248,27 @@ function initKeyboardEvents(){
         break;
     }
   });
+}
+
+function loadHighscoreScreen(){
+  const highScoresText = document.querySelector("#highScoresText");
+  highScoresText.replaceChildren();
+  for (let index = 1; index <= 5; index++){
+    indexName = localStorage.getItem(highscoreStoreStr + index);
+    indexScore = localStorage.getItem(highscoreStoreNum + index);
+    //for each empty row, init an empty entry
+    if (indexName === null || indexName === "null"){
+      localStorage.setItem(highscoreStoreStr + index, "Empty");
+      localStorage.setItem(highscoreStoreNum + index, 0);
+      indexName = "Empty";
+      indexScore = 0;
+    }
+    const item = document.createElement("li");
+    item.style.marginTop = "5%";
+    item.style.marginBottom = "5%";
+    item.innerHTML = indexName + " --- " + indexScore;
+    highScoresText.append(item);
+  }
 }
 
 //Function to start game loop
@@ -278,6 +332,24 @@ function gameLoop(){
       setTimeout(() => {
         clearAllAnimationFrames();
       }, 200);
+      //Compare current score against all high scores
+      highScoreIndex = 5;
+      let isNewHiscore = false;
+      //Check index of new score
+      for (let index = highScoreIndex; index >= 1; index--){
+        const hiscore = parseInt(localStorage.getItem(highscoreStoreNum + index));
+        if (currentScore > hiscore){
+          isNewHiscore = true;
+          highScoreIndex = index;
+        }
+      } 
+      if (isNewHiscore){
+        loadElement(inputHiscoreSection.classList);
+      } else{
+        hideElement(inputHiscoreSection.classList);
+      }
+      const finalScoreLabel = document.querySelector("#scoreFinalLabel");
+      finalScoreLabel.innerHTML = currentScore;
       loadElement(gameOverScreen.classList);
       return;
     }
@@ -762,6 +834,17 @@ function main(){
   initButtons();
   initKeyboardEvents();
   renderTitleScreen();
+  // //Testing init hiscores
+  // localStorage.setItem(highscoreStoreStr + 1, null);
+  // localStorage.setItem(highscoreStoreStr + 2, null);
+  // localStorage.setItem(highscoreStoreStr + 3, null);
+  // localStorage.setItem(highscoreStoreStr + 4, null);
+  // localStorage.setItem(highscoreStoreStr + 5, null);
+  // localStorage.setItem(highscoreStoreNum + 1, null);
+  // localStorage.setItem(highscoreStoreNum + 2, null);
+  // localStorage.setItem(highscoreStoreNum + 3, null);
+  // localStorage.setItem(highscoreStoreNum + 4, null);
+  // localStorage.setItem(highscoreStoreNum + 5, null);
 }
 
 main();

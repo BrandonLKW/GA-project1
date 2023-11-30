@@ -44,6 +44,13 @@
       <button id="resetGameBtn" class="optionsButton">Reset</button>
       <button id="exitGameBtn" class="optionsButton">Exit</button>
     </section>
+    <div id="gameHighScore" class="modal hide">
+      <section id="gameHighScoreSection">
+        <img class="headerImg" src="/images/highscore.png" alt="Highscore Logo">
+        <ol id="highScoresText"></ol>
+        <button id="highScoresBtn">Close</button>
+      </section>
+    </div>
     <div id="gameDifficulty" class="modal hide">
       <section id="gameDifficultySection">
         <button id="easyDiffBtn" class="gameDifficultyButton">Easy</button>
@@ -57,7 +64,7 @@
         <div class="gameOverHeaderLabel">Final Score</div>
         <div id="scoreFinalLabel" class="gameOverHeaderLabel">0</div>
       </section>
-      <section id="gameOverInput">
+      <section id="gameOverInput" class="hide">
         <form>
           <div class="formText">You have achieved a new high score!</div>
           <div id="formItems">
